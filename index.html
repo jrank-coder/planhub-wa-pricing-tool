@@ -19,21 +19,19 @@
 
 <!-- ══════════════ AUTH SCREEN ══════════════ -->
 <div id="auth-screen">
-  <div class="logo-wrap">
-    <svg width="140" height="36" viewBox="0 0 140 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="140" height="36" rx="4" fill="#0052CC"/>
-      <text x="70" y="23" fill="white" font-size="14" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">PlanHub</text>
-    </svg>
+  <div class="auth-card">
+    <div class="logo">
+      <img src="assets/logo-wordmark.png" alt="planHub" />
+    </div>
+    <div class="auth-divider"></div>
+    <h1>WA Project Availability</h1>
+    <p>Washington Pricing Test &nbsp;·&nbsp; Internal AE Use Only<br/>Sign in with your planHub Google account to continue.</p>
+    <button class="btn-google" id="btn-google-signin">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+      Sign in with Google
+    </button>
+    <p id="auth-error" style="color:#e17055;font-size:12px;display:none;font-weight:500;"></p>
   </div>
-  <div>
-    <h1>WA Project Availability Tool</h1>
-    <p style="margin-top:6px">Washington Pricing Test · Internal AE Use Only</p>
-  </div>
-  <button class="btn-google" id="btn-google-signin">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-    Sign in with Google
-  </button>
-  <p id="auth-error" style="color:#DE350B;font-size:12px;display:none;"></p>
 </div>
 
 <!-- ══════════════ APP SCREEN ══════════════ -->
@@ -42,14 +40,14 @@
   <!-- Header -->
   <header class="app-header">
     <div class="brand">
-      <svg width="90" height="22" viewBox="0 0 90 22" fill="none">
-        <text x="0" y="16" fill="white" font-size="13" font-weight="700" font-family="Arial,sans-serif">PlanHub</text>
-      </svg>
-      <span>WA Project Availability</span>
+      <img src="assets/brandmark.png" alt="planHub" />
+      <div class="divider"></div>
+      <span class="tool-name">WA Project Availability</span>
     </div>
     <div class="header-right">
       <span class="user-email" id="user-email"></span>
-      <button class="btn-signout" id="btn-signout">Sign out</button>
+      <a href="admin.html" class="btn-header" target="_blank">⚙ Pricing Admin</a>
+      <button class="btn-header" id="btn-signout">Sign out</button>
     </div>
   </header>
 
@@ -138,10 +136,6 @@
 
       </div>
 
-      <!-- Admin link -->
-      <div class="sidebar-footer">
-        <a href="admin.html" class="admin-link" target="_blank">⚙ Admin — Edit Pricing Tiers</a>
-      </div>
     </aside>
 
     <!-- ── Right panel ── -->
