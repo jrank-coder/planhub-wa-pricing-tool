@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — WA Pricing Tiers</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<div class="admin-page">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <svg width="90" height="22" viewBox="0 0 90 22" fill="none">
+        <text x="0" y="16" fill="white" font-size="13" font-weight="700" font-family="Arial,sans-serif">PlanHub</text>
+      </svg>
+      <span>Pricing Admin</span>
+    </div>
+    <div class="header-right">
+      <a href="index.html" style="color:rgba(255,255,255,.8);font-size:12px;text-decoration:none;">← Back to Tool</a>
+    </div>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- Password gate -->
+    <div class="admin-card" id="pw-card">
+      <div class="admin-card-header">
+        <h2>Admin Access</h2>
+      </div>
+      <div class="admin-card-body">
+        <div id="pw-gate">
+          <p class="desc">Enter the admin password to edit pricing tiers.</p>
+          <input type="password" class="input-field" id="pw-input" placeholder="Admin password" />
+          <p class="error-msg" id="pw-error">Incorrect password.</p>
+          <button class="btn-primary" id="btn-pw-submit">Unlock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tiers editor (hidden until password correct) -->
+    <div id="tiers-editor" style="display:none; margin-top:20px;">
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <h2>Pricing Tiers</h2>
+          <span id="save-status" class="save-status">✓ Saved</span>
+        </div>
+        <div class="admin-card-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+            Define up to 6 tiers. The last tier is the "Unlimited" bracket (no max).
+            <strong>Flat Price</strong> is the fixed fee charged for the tier — this is what the tool displays as Total Investment.
+            <strong>$/Project</strong> is a display-only reference rate shown to AEs (not a multiplier).
+            Tier 6 has no $/Project. Changes save to Firestore and take effect immediately.
+          </p>
+          <div style="overflow-x:auto;">
+            <table class="tiers-table" id="tiers-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Tier Label</th>
+                  <th>Min Projects</th>
+                  <th>Max Projects</th>
+                  <th>Flat Price ($)</th>
+                  <th>$/Project (display)</th>
+                </tr>
+              </thead>
+              <tbody id="tiers-tbody">
+                <!-- Populated by admin.js -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="admin-actions">
+            <button class="btn-secondary" id="btn-reset-tiers">Reset to Defaults</button>
+            <button class="btn-save" id="btn-save-tiers">Save Tiers</button>
+          </div>
+
+          <div style="margin-top:20px;padding:14px;background:var(--ph-blue-light);border-radius:6px;font-size:12px;color:var(--ph-blue-dark);">
+            <strong>How pricing displays in the tool:</strong><br/>
+            When an AE runs a search, the active project count is matched to the tier range. The tool shows:
+            Total Investment = project count × price/project. Volume savings = (Tier 1 rate − current rate) × project count.
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="admin-card" style="margin-top:16px;">
+        <div class="admin-card-header">
+          <h2>Pricing Preview</h2>
+        </div>
+        <div class="admin-card-body">
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">
+            What AEs see for common project counts:
+          </p>
+          <div style="overflow-x:auto;">
+            <table id="preview-table">
+              <thead>
+                <tr>
+                  <th>Project Count</th>
+                  <th>Tier</th>
+                  <th>Rate / Project</th>
+                  <th>Total Investment</th>
+                  <th>Volume Savings</th>
+                </tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tiers-editor -->
+  </div><!-- /admin-body -->
+</div><!-- /admin-page -->
+
+<script src="admin.js"></script>
+</body>
+</html>

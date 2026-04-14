@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WA Project Availability — PlanHub</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Leaflet (map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Firebase v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- ══════════════ AUTH SCREEN ══════════════ -->
+<div id="auth-screen">
+  <div class="logo-wrap">
+    <svg width="140" height="36" viewBox="0 0 140 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="140" height="36" rx="4" fill="#0052CC"/>
+      <text x="70" y="23" fill="white" font-size="14" font-weight="700" text-anchor="middle" font-family="Arial,sans-serif">PlanHub</text>
+    </svg>
+  </div>
+  <div>
+    <h1>WA Project Availability Tool</h1>
+    <p style="margin-top:6px">Washington Pricing Test · Internal AE Use Only</p>
+  </div>
+  <button class="btn-google" id="btn-google-signin">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+    Sign in with Google
+  </button>
+  <p id="auth-error" style="color:#DE350B;font-size:12px;display:none;"></p>
+</div>
+
+<!-- ══════════════ APP SCREEN ══════════════ -->
+<div id="app-screen">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <svg width="90" height="22" viewBox="0 0 90 22" fill="none">
+        <text x="0" y="16" fill="white" font-size="13" font-weight="700" font-family="Arial,sans-serif">PlanHub</text>
+      </svg>
+      <span>WA Project Availability</span>
+    </div>
+    <div class="header-right">
+      <span class="user-email" id="user-email"></span>
+      <button class="btn-signout" id="btn-signout">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Data status bar -->
+  <div class="data-bar">
+    <div class="status">
+      <span class="dot loading" id="data-dot"></span>
+      <span id="data-status-text">Loading project data…</span>
+    </div>
+    <button class="btn-refresh" id="btn-refresh">↻ Refresh</button>
+  </div>
+
+  <!-- Main layout -->
+  <div class="main-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+
+        <!-- Mode toggle -->
+        <div class="field-group">
+          <label>Search Mode</label>
+          <div class="mode-toggle">
+            <button class="mode-btn active" id="mode-radius" data-mode="radius">
+              By Radius<br/><small style="font-weight:400">ZIP + miles → projects</small>
+            </button>
+            <button class="mode-btn" id="mode-count" data-mode="count">
+              By Project Count<br/><small style="font-weight:400">Goal → radius</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- ZIP input -->
+        <div class="field-group">
+          <label>Center ZIP Code</label>
+          <input type="text" class="input-field" id="zip-input" placeholder="e.g. 98101" maxlength="5" />
+        </div>
+
+        <!-- Mode 1: Radius -->
+        <div id="mode-radius-inputs" class="field-group">
+          <label>Radius: <strong id="radius-display">50 miles</strong></label>
+          <input type="range" class="radius-slider" id="radius-slider"
+                 min="5" max="200" value="50" step="5" />
+          <div class="radius-presets">
+            <button class="preset-btn" data-miles="25">25 mi</button>
+            <button class="preset-btn active" data-miles="50">50 mi</button>
+            <button class="preset-btn" data-miles="75">75 mi</button>
+            <button class="preset-btn" data-miles="100">100 mi</button>
+            <button class="preset-btn" data-miles="150">150 mi</button>
+            <button class="preset-btn" data-miles="200">200 mi</button>
+          </div>
+        </div>
+
+        <!-- Mode 2: Project count -->
+        <div id="mode-count-inputs" class="field-group" style="display:none;">
+          <label>Desired Active Projects</label>
+          <input type="number" class="input-field" id="project-count-input"
+                 placeholder="e.g. 25" min="1" max="9999" />
+          <small style="color:var(--text-muted);font-size:11px;">
+            Tool will find the smallest radius that reaches this count.
+          </small>
+        </div>
+
+        <!-- Trade multi-select -->
+        <div class="field-group">
+          <div class="trade-header">
+            <label>Trades</label>
+            <div style="display:flex;gap:8px;">
+              <button id="btn-select-all-trades">All</button>
+              <button id="btn-clear-trades">None</button>
+            </div>
+          </div>
+          <div class="trade-list" id="trade-list">
+            <!-- Populated by app.js from TRADES constant -->
+          </div>
+          <small id="trade-count" style="color:var(--text-muted);font-size:11px;"></small>
+        </div>
+
+        <!-- Submit -->
+        <button class="btn-primary" id="btn-find" disabled>
+          Find Projects
+        </button>
+
+        <!-- Inline error -->
+        <div id="search-error" style="display:none;"></div>
+
+      </div>
+
+      <!-- Admin link -->
+      <div class="sidebar-footer">
+        <a href="admin.html" class="admin-link" target="_blank">⚙ Admin — Edit Pricing Tiers</a>
+      </div>
+    </aside>
+
+    <!-- ── Right panel ── -->
+    <main class="right-panel">
+
+      <!-- Map -->
+      <div id="map"></div>
+
+      <!-- Results -->
+      <div class="results-area" id="results-area">
+        <div class="empty-state" id="empty-state">
+          <div class="icon">🗺️</div>
+          <div>Enter a ZIP code and search to see available projects.</div>
+        </div>
+
+        <!-- Alert (shown for warnings/errors in results) -->
+        <div id="results-alert" style="display:none;"></div>
+
+        <!-- Summary cards -->
+        <div class="summary-cards" id="summary-cards" style="display:none;">
+          <div class="summary-card highlight">
+            <div class="label">Active Projects</div>
+            <div class="value" id="card-active-projects">—</div>
+            <div class="sub" id="card-active-sub">bid due today or later</div>
+          </div>
+          <div class="summary-card" id="card-radius-wrap">
+            <div class="label" id="card-radius-label">Radius Used</div>
+            <div class="value" id="card-radius">—</div>
+            <div class="sub" id="card-radius-sub">miles</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">ZIP Codes</div>
+            <div class="value" id="card-zips">—</div>
+            <div class="sub">with active projects</div>
+          </div>
+        </div>
+
+        <!-- Pricing card -->
+        <div class="pricing-card" id="pricing-card" style="display:none;">
+          <div class="pc-header">
+            <span class="pc-title">Recommended Plan</span>
+            <span class="tier-badge" id="pc-tier-badge">—</span>
+          </div>
+          <div class="pricing-grid">
+            <div class="pricing-stat">
+              <div class="ps-label">Total Investment</div>
+              <div class="ps-value" id="pc-total">—</div>
+            </div>
+            <div class="pricing-stat">
+              <div class="ps-label">Rate / Project</div>
+              <div class="ps-value" id="pc-rate">—</div>
+            </div>
+            <div class="pricing-stat">
+              <div class="ps-label">Volume Savings</div>
+              <div class="ps-value green" id="pc-savings">—</div>
+            </div>
+          </div>
+          <div class="savings-note" id="pc-savings-note"></div>
+        </div>
+
+        <!-- ZIP breakdown table -->
+        <div class="zip-table-wrap" id="zip-table-wrap" style="display:none;">
+          <div class="zip-table-header">
+            <h3 id="zip-table-title">ZIP Code Breakdown</h3>
+            <button class="btn-export" id="btn-export-csv">⬇ Export CSV</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th data-col="zip">ZIP</th>
+                  <th data-col="city">City</th>
+                  <th data-col="state">State</th>
+                  <th data-col="distance">Distance (mi)</th>
+                  <th data-col="active">Active Projects</th>
+                </tr>
+              </thead>
+              <tbody id="zip-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div><!-- /results-area -->
+    </main>
+  </div><!-- /main-layout -->
+</div><!-- /app-screen -->
+
+<script src="app.js"></script>
+</body>
+</html>
