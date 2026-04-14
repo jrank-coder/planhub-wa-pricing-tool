@@ -18,7 +18,7 @@
 // ════════════════════════════════════════════════════════════════
 
 // Hash of 'planhub-admin' — CHANGE THIS before deploying
-const ADMIN_HASH = 'b5a98c7b3bfcd4ddf8a8e7c4b2c0a1e5f6d9b3c7e2a4f0d8c1b5e3a2f7d6c9'; // placeholder
+const ADMIN_HASH = '007270560d6459eb00a5c03eaf1abea53a10b4363201623fbac014d3e615f985';
 
 // ════════════════════════════════════════════════════════════════
 // FIREBASE CONFIG
