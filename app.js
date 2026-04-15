@@ -15,16 +15,13 @@ const CONFIG = {
     sheetId: '1QqPlXC7CTTYT7Umf2oBKK0MHCd8spLZshO8L6E43pXo',
     tab:     'Project data',
   },
-  // TODO: Update these to match exact column headers in your Coefficient Sheet
-  // REQUIRED before tool works: projectId, zip, bidDueDate, trades
-  // city is optional (falls back to ZIP dataset lookup)
-  // state is resolved from ZIP dataset — no Sheet column needed
   columns: {
-    projectId:  'project_id',    // TODO: confirm exact header name
-    zip:        'zip_code',       // TODO: confirm exact header name
-    bidDueDate: 'bid_due_date',   // TODO: confirm exact header name — REQUIRED. Format: YYYY-MM-DD
-    trades:     'trades',          // TODO: confirm exact header name — comma-delimited values
-    city:       'city',            // TODO: confirm exact header name (optional)
+    projectId:  'Project ID',
+    zip:        'Project Zip Code',
+    bidDueDate: 'Bid Due Date',
+    trades:     'Trade Names CSV',
+    city:       'Project City',
+    state:      'Project State',
   },
   // Each trade must match values in the 'trades' column of the Coefficient Sheet exactly
   trades: [
@@ -213,7 +210,7 @@ function updateMap(centerLat, centerLng, radiusMiles, zipRows) {
       fillOpacity: 0.7,
       weight:      1,
     }).addTo(map);
-    m.bindPopup(`<strong>${row.zip}</strong> — ${row.city}<br/>${row.active} active project${row.active !== 1 ? 's' : ''}`);
+    m.bindPopup(`<strong>${row.zip}</strong> — ${row.city}${row.state ? ', ' + row.state : ''}<br/>${row.active} active project${row.active !== 1 ? 's' : ''}`);
     zipMarkers.push(m);
   });
 
@@ -253,7 +250,8 @@ async function fetchProjectData(silent = false) {
 
     const csv  = await res.text();
     const rows = parseCSV(csv);
-    const [headers, ...dataRows] = rows;
+    // Row 1 is a Tableau import metadata row; row 2 contains the actual column headers
+    const [_tableauRow, headers, ...dataRows] = rows;
 
     if (!headers || headers.length === 0) throw new Error('Sheet appears empty or tab not found.');
 
@@ -263,16 +261,16 @@ async function fetchProjectData(silent = false) {
       .map(row => {
         const obj = {};
         headers.forEach((h, i) => { obj[h] = (row[i] || '').trim(); });
-        const zip = (obj[COL.zip] || '').replace(/\D/g, '').padStart(5, '0');
-        // State resolved from ZIP dataset — no Sheet column needed
-        const zipInfo = state.zipData ? state.zipData[zip] : null;
+        const zip      = (obj[COL.zip]   || '').replace(/\D/g, '').padStart(5, '0');
+        const zipInfo  = state.zipData ? state.zipData[zip] : null;
+        const sheetState = (obj[COL.state] || '').trim();
         return {
           projectId:  obj[COL.projectId]  || '',
           zip,
           bidDueDate: obj[COL.bidDueDate]  || '',
           trades:     obj[COL.trades]      || '',
           city:       obj[COL.city]        || (zipInfo ? zipInfo.city  : ''),
-          state:      zipInfo ? zipInfo.state : '',
+          state:      sheetState           || (zipInfo ? zipInfo.state : ''),
         };
       })
       .filter(p => p.zip.length === 5);
@@ -395,12 +393,26 @@ function buildTradeList() {
     container.querySelectorAll('.trade-cb').forEach(cb => { cb.checked = false; });
     updateTradeCount();
   });
+
+  document.getElementById('btn-select-all-states').addEventListener('click', () => {
+    document.querySelectorAll('.state-cb').forEach(cb => { cb.checked = true; });
+  });
+  document.getElementById('btn-clear-states').addEventListener('click', () => {
+    document.querySelectorAll('.state-cb').forEach(cb => { cb.checked = false; });
+  });
 }
 
 function getSelectedTrades() {
   const cbs = document.querySelectorAll('.trade-cb:checked');
   const all  = document.querySelectorAll('.trade-cb');
   // If all selected, treat as "no filter" for performance
+  if (cbs.length === all.length) return [];
+  return [...cbs].map(cb => cb.value);
+}
+
+function getSelectedStates() {
+  const cbs = document.querySelectorAll('.state-cb:checked');
+  const all  = document.querySelectorAll('.state-cb');
   if (cbs.length === all.length) return [];
   return [...cbs].map(cb => cb.value);
 }
@@ -450,7 +462,7 @@ function isBidDateMissing() {
   return state.projectData.every(p => !p.bidDueDate);
 }
 
-function getActiveProjects(zipCodes, selectedTrades) {
+function getActiveProjects(zipCodes, selectedTrades, selectedStates) {
   const todayStr    = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const zipSet      = new Set(zipCodes);
   const datesMissing = isBidDateMissing();
@@ -459,6 +471,7 @@ function getActiveProjects(zipCodes, selectedTrades) {
     if (!zipSet.has(p.zip)) return false;
     // If bid_due_date column not yet in Sheet, include all projects and show warning
     if (!datesMissing && p.bidDueDate && p.bidDueDate < todayStr) return false;
+    if (selectedStates.length > 0 && !selectedStates.includes(p.state)) return false;
 
     if (selectedTrades.length > 0) {
       const projectTrades = p.trades.split(',').map(t => t.trim()).filter(Boolean);
@@ -485,8 +498,9 @@ async function runSearch() {
     showSearchError('ZIP code not recognized. Please enter a valid US ZIP code.');
     return;
   }
-  if (state.zipData[zip].state !== 'WA') {
-    showSearchError('Search center must be a Washington state ZIP code.');
+  const VALID_STATES = new Set(['WA', 'OR', 'ID', 'MT']);
+  if (!VALID_STATES.has(state.zipData[zip].state)) {
+    showSearchError('Search center must be a ZIP code in WA, OR, ID, or MT.');
     return;
   }
   if (!state.dataLoaded) {
@@ -495,6 +509,7 @@ async function runSearch() {
   }
 
   const selectedTrades = getSelectedTrades();
+  const selectedStates = getSelectedStates();
   setBtnLoading(true);
 
   try {
@@ -504,7 +519,7 @@ async function runSearch() {
       // ── Mode 1: ZIP + radius → project count ──
       finalRadius    = state.radius;
       zipsInRadius   = getZipsInRadius(zip, finalRadius);
-      activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
+      activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades, selectedStates);
 
       if (isBidDateMissing()) {
         alert = {
@@ -530,7 +545,7 @@ async function runSearch() {
       let found = false;
       for (const r of CONFIG.radiusSteps) {
         const zips  = getZipsInRadius(zip, r);
-        const projs = getActiveProjects(zips.map(z => z.zip), selectedTrades);
+        const projs = getActiveProjects(zips.map(z => z.zip), selectedTrades, selectedStates);
         if (projs.length >= target) {
           finalRadius    = r;
           zipsInRadius   = zips;
@@ -549,7 +564,7 @@ async function runSearch() {
         // Max radius reached
         finalRadius    = CONFIG.maxRadius;
         zipsInRadius   = getZipsInRadius(zip, finalRadius);
-        activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
+        activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades, selectedStates);
         alert = {
           type: 'warning',
           msg:  `Only ${activeProjects.length} active project${activeProjects.length !== 1 ? 's' : ''} found within ${CONFIG.maxRadius} miles. Adjust your trade selection or consider a broader territory.`,
