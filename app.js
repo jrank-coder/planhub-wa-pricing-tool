@@ -17,7 +17,7 @@ const CONFIG = {
   },
   columns: {
     projectId:  'Project ID',
-    zip:        'Project Zip Code',
+    zip:        'Project Zipcode',
     bidDueDate: 'Bid Due Date',
     trades:     'Trade Names CSV',
     city:       'Project City',
@@ -267,7 +267,7 @@ async function fetchProjectData(silent = false) {
         return {
           projectId:  obj[COL.projectId]  || '',
           zip,
-          bidDueDate: obj[COL.bidDueDate]  || '',
+          bidDueDate: parseSheetDate(obj[COL.bidDueDate] || ''),
           trades:     obj[COL.trades]      || '',
           city:       obj[COL.city]        || (zipInfo ? zipInfo.city  : ''),
           state:      sheetState           || (zipInfo ? zipInfo.state : ''),
@@ -317,6 +317,17 @@ function parseCSV(text) {
   }
   if (field || row.length) { row.push(field.trim()); rows.push(row); }
   return rows.filter(r => r.some(c => c !== ''));
+}
+
+// Converts M/D/YYYY (Coefficient export format) to YYYY-MM-DD for date comparison
+function parseSheetDate(str) {
+  if (!str) return '';
+  const parts = str.split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return str; // already YYYY-MM-DD or unrecognized — leave as-is
 }
 
 function formatTime(d) {
