@@ -23,33 +23,33 @@ const CONFIG = {
     city:       'Project City',
     state:      'Project State',
   },
-  // Each trade must match values in the 'trades' column of the Coefficient Sheet exactly
+  // Trade names must match values in the 'Trade Names CSV' column exactly (including commas within names)
   trades: [
-    'Demolition and Site Construction',
-    'Electrical and Low Voltage',
-    'Painting and Wallcovering',
-    'HVAC',
+    'Cleaning and Construction Maintenance',
     'Concrete Construction',
-    'Interior Walls, Ceilings and Insulation',
-    'Plumbing',
-    'Doors, Glass and Windows',
-    'Flooring',
-    'Wood, Carpentry and Plaster',
-    'Metal and Steel Construction',
-    'Roofing, Thermal and Moisture Protection',
-    'Specialties',
-    'Fire Protection',
-    'Kitchens and Baths',
-    'Cleaning and Construction',
-    'Equipment and Supplies',
-    'Exterior Improvements and Landscaping',
-    'Masonry Construction',
-    'Exterior Siding and Masonry',
-    'Preconstruction Planning and Supervision',
-    'Special Construction',
-    'Decor and Furnishings',
     'Conveying Systems',
+    'Décor and Furnishings',
+    'Demolition and Site Construction',
+    'Doors, Glass and Windows',
+    'Electrical and Low Voltage',
+    'Equipment / Supplies',
+    'Exterior Improvements and Landscaping',
+    'Exterior Siding and Masonry',
+    'Fire Protection',
+    'Flooring',
+    'HVAC',
+    'Interior Walls, Ceilings and Insulation',
+    'Kitchens and Baths',
+    'Masonry Construction',
+    'Metal and Steel Construction',
     'Other',
+    'Painting and Wallcovering',
+    'Plumbing',
+    'Preconstruction, Planning and Supervision',
+    'Roofing, Thermal and Moisture Protection',
+    'Special Construction',
+    'Specialties',
+    'Wood Carpentry and Plastics Construction',
   ],
   // Radius steps used in binary search (Mode 2 — find radius for target project count)
   radiusSteps: [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200],
@@ -471,8 +471,8 @@ function getActiveProjects(zipCodes, selectedTrades) {
     if (!datesMissing && p.bidDueDate && p.bidDueDate < todayStr) return false;
 
     if (selectedTrades.length > 0) {
-      const projectTrades = p.trades.split(',').map(t => t.trim()).filter(Boolean);
-      return selectedTrades.some(t => projectTrades.includes(t));
+      // Use substring match — trade names contain commas so split-based matching breaks them
+      return selectedTrades.some(t => p.trades.includes(t));
     }
     return true;
   });
