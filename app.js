@@ -607,10 +607,9 @@ async function runSearch() {
 // ════════════════════════════════════════════════════════════════
 
 function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
-  // Hide empty state, show pinned top + map
-  document.getElementById('empty-state').style.display  = 'none';
-  document.getElementById('results-top').style.display  = 'flex';
-  document.getElementById('map').style.display          = 'block';
+  // Hide empty state, show map
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('map').style.display         = 'block';
 
   // Alert
   const alertEl = document.getElementById('results-alert');
@@ -838,7 +837,6 @@ function showSearchError(msg) {
 
 function clearResults() {
   document.getElementById('search-error').style.display   = 'none';
-  document.getElementById('results-top').style.display    = 'none';
   document.getElementById('zip-table-wrap').style.display = 'none';
   document.getElementById('map').style.display            = 'none';
   document.getElementById('empty-state').style.display    = 'flex';
