@@ -457,42 +457,42 @@ body {
 .summary-card.highlight .value { color: var(--mint); }
 .summary-card.highlight .sub   { color: rgba(255,255,255,.5); }
 
-/* ── Pricing card (–25%) ── */
+/* ── Pricing card ── */
 .pricing-card {
-  background: var(--card-bg);
-  border: 1.5px solid var(--border);
+  background: #fffdf0;
+  border: 2px solid #d4a017;
   border-radius: var(--radius-card);
-  padding: 13px 15px;
-  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  box-shadow: 0 4px 16px rgba(212,160,23,.15), 0 0 1px rgba(212,160,23,.2);
 }
 .pc-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
-.pc-title { font-size: 11px; font-weight: 700; color: var(--dark-blue); }
+.pc-title { font-size: 13px; font-weight: 700; color: var(--dark-blue); }
 .tier-badge {
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 2px 8px;
-  background: var(--mint);
-  color: var(--dark-blue);
+  padding: 2px 10px;
+  background: #d4a017;
+  color: #fff;
   border-radius: 20px;
   letter-spacing: .02em;
 }
 
-.pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.pricing-stat .ps-label { font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
-.pricing-stat .ps-value { font-size: 17px; font-weight: 700; color: var(--dark-blue); }
+.pricing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.pricing-stat .ps-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.pricing-stat .ps-value { font-size: 20px; font-weight: 700; color: var(--dark-blue); }
 .pricing-stat .ps-value.green { color: var(--mint); }
 
 .savings-note {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8d08a;
   line-height: 1.5;
 }
 
