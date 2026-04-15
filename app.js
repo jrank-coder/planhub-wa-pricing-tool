@@ -250,8 +250,8 @@ async function fetchProjectData(silent = false) {
 
     const csv  = await res.text();
     const rows = parseCSV(csv);
-    // Row 1 is a Tableau import metadata row; row 2 contains the actual column headers
-    const [_tableauRow, headers, ...dataRows] = rows;
+    // Row 1 contains the column headers (Tableau metadata is embedded as field[0] — ignored by column lookup)
+    const [headers, ...dataRows] = rows;
 
     if (!headers || headers.length === 0) throw new Error('Sheet appears empty or tab not found.');
 
