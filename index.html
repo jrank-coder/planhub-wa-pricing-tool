@@ -120,6 +120,8 @@
               <button id="btn-clear-trades">None</button>
             </div>
           </div>
+          <input type="text" class="trade-search" id="trade-search"
+                 placeholder="Search trades…" autocomplete="off" />
           <div class="trade-list" id="trade-list">
             <!-- Populated by app.js from TRADES constant -->
           </div>
@@ -202,7 +204,7 @@
             <h3 id="zip-table-title">ZIP Code Breakdown</h3>
             <button class="btn-export" id="btn-export-csv">⬇ Export CSV</button>
           </div>
-          <div style="overflow-x:auto;">
+          <div class="zip-table-scroll">
             <table>
               <thead>
                 <tr>

@@ -396,6 +396,14 @@ function buildTradeList() {
 
   container.addEventListener('change', updateTradeCount);
 
+  document.getElementById('trade-search').addEventListener('input', function () {
+    const q = this.value.toLowerCase();
+    container.querySelectorAll('.trade-item').forEach(item => {
+      const name = item.querySelector('span').textContent.toLowerCase();
+      item.style.display = name.includes(q) ? '' : 'none';
+    });
+  });
+
   document.getElementById('btn-select-all-trades').addEventListener('click', () => {
     container.querySelectorAll('.trade-cb').forEach(cb => { cb.checked = true; });
     updateTradeCount();
