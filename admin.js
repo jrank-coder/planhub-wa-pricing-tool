@@ -70,7 +70,8 @@ async function checkPassword() {
   const hashMatch     = hash === ADMIN_HASH;
 
   if (hashMatch || fallbackMatch) {
-    await auth.signInAnonymously();
+    // Anonymous sign-in satisfies Firestore auth requirement for pricing tiers write
+    if (!auth.currentUser) await auth.signInAnonymously();
     document.getElementById('pw-card').style.display    = 'none';
     document.getElementById('tiers-editor').style.display = 'block';
     await loadTiers();
