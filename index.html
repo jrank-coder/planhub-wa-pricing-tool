@@ -142,19 +142,11 @@
 
     <!-- ── Right panel ── -->
     <main class="right-panel">
-      <div class="results-area" id="results-area">
 
-        <!-- Empty state -->
-        <div class="empty-state" id="empty-state">
-          <div class="icon">🗺️</div>
-          <div>Enter a ZIP code and search to see available projects.</div>
-        </div>
-
-        <!-- Alert -->
+      <!-- ① Pinned top: stats + pricing (hidden until search) -->
+      <div class="results-top" id="results-top" style="display:none;">
         <div id="results-alert" style="display:none;"></div>
-
-        <!-- 1. Summary cards -->
-        <div class="summary-cards" id="summary-cards" style="display:none;">
+        <div class="summary-cards" id="summary-cards">
           <div class="summary-card highlight">
             <div class="label">Active Projects</div>
             <div class="value" id="card-active-projects">—</div>
@@ -171,9 +163,7 @@
             <div class="sub">with active projects</div>
           </div>
         </div>
-
-        <!-- 2. Pricing card -->
-        <div class="pricing-card" id="pricing-card" style="display:none;">
+        <div class="pricing-card" id="pricing-card">
           <div class="pc-header">
             <span class="pc-title">Recommended Plan</span>
             <span class="tier-badge" id="pc-tier-badge">—</span>
@@ -194,11 +184,15 @@
           </div>
           <div class="savings-note" id="pc-savings-note"></div>
         </div>
+      </div>
 
-        <!-- 3. Map -->
+      <!-- ② Scrollable: empty state / map + ZIP table -->
+      <div class="results-scroll" id="results-area">
+        <div class="empty-state" id="empty-state">
+          <div class="icon">🗺️</div>
+          <div>Enter a ZIP code and search to see available projects.</div>
+        </div>
         <div id="map"></div>
-
-        <!-- 4. ZIP breakdown table -->
         <div class="zip-table-wrap" id="zip-table-wrap" style="display:none;">
           <div class="zip-table-header">
             <h3 id="zip-table-title">ZIP Code Breakdown</h3>
@@ -219,8 +213,8 @@
             </table>
           </div>
         </div>
+      </div>
 
-      </div><!-- /results-area -->
     </main>
   </div><!-- /main-layout -->
 </div><!-- /app-screen -->

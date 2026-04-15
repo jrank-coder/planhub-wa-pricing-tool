@@ -607,9 +607,10 @@ async function runSearch() {
 // ════════════════════════════════════════════════════════════════
 
 function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
-  // Hide empty state, show map
-  document.getElementById('empty-state').style.display = 'none';
-  document.getElementById('map').style.display = 'block';
+  // Hide empty state, show pinned top + map
+  document.getElementById('empty-state').style.display  = 'none';
+  document.getElementById('results-top').style.display  = 'flex';
+  document.getElementById('map').style.display          = 'block';
 
   // Alert
   const alertEl = document.getElementById('results-alert');
@@ -632,7 +633,7 @@ function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
   const cardRadiusLabel = document.getElementById('card-radius-label');
   cardRadiusLabel.textContent = state.mode === 'count' ? 'Recommended Radius' : 'Radius Used';
 
-  document.getElementById('summary-cards').style.display = 'grid';
+  document.getElementById('summary-cards').style.display  = 'grid';
 
   // Pricing
   const count = activeProjects.length;
@@ -649,12 +650,7 @@ function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
 
 function renderPricingCard(count, tier) {
   const card = document.getElementById('pricing-card');
-  if (!tier || !tier.priceFlat) {
-    card.style.display = 'none';
-    return;
-  }
-
-  card.style.display = 'block';
+  if (!tier || !tier.priceFlat) return;
 
   const baseTier = state.pricingTiers[0];
   const baseRate = baseTier ? baseTier.pricePerProject : null; // $60 base
@@ -842,9 +838,7 @@ function showSearchError(msg) {
 
 function clearResults() {
   document.getElementById('search-error').style.display   = 'none';
-  document.getElementById('results-alert').style.display  = 'none';
-  document.getElementById('summary-cards').style.display  = 'none';
-  document.getElementById('pricing-card').style.display   = 'none';
+  document.getElementById('results-top').style.display    = 'none';
   document.getElementById('zip-table-wrap').style.display = 'none';
   document.getElementById('map').style.display            = 'none';
   document.getElementById('empty-state').style.display    = 'flex';
