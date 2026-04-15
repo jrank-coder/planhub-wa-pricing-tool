@@ -34,7 +34,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const auth = firebase.auth();
+const db   = firebase.firestore();
 
 const TIERS_COLLECTION = 'wa_pricing_tool';
 const TIERS_DOC        = 'pricing_tiers';
@@ -69,6 +70,7 @@ async function checkPassword() {
   const hashMatch     = hash === ADMIN_HASH;
 
   if (hashMatch || fallbackMatch) {
+    await auth.signInAnonymously();
     document.getElementById('pw-card').style.display    = 'none';
     document.getElementById('tiers-editor').style.display = 'block';
     await loadTiers();
