@@ -142,21 +142,18 @@
 
     <!-- ── Right panel ── -->
     <main class="right-panel">
-
-      <!-- Map -->
-      <div id="map"></div>
-
-      <!-- Results -->
       <div class="results-area" id="results-area">
+
+        <!-- Empty state -->
         <div class="empty-state" id="empty-state">
           <div class="icon">🗺️</div>
           <div>Enter a ZIP code and search to see available projects.</div>
         </div>
 
-        <!-- Alert (shown for warnings/errors in results) -->
+        <!-- Alert -->
         <div id="results-alert" style="display:none;"></div>
 
-        <!-- Summary cards -->
+        <!-- 1. Summary cards -->
         <div class="summary-cards" id="summary-cards" style="display:none;">
           <div class="summary-card highlight">
             <div class="label">Active Projects</div>
@@ -175,7 +172,7 @@
           </div>
         </div>
 
-        <!-- Pricing card -->
+        <!-- 2. Pricing card -->
         <div class="pricing-card" id="pricing-card" style="display:none;">
           <div class="pc-header">
             <span class="pc-title">Recommended Plan</span>
@@ -198,7 +195,10 @@
           <div class="savings-note" id="pc-savings-note"></div>
         </div>
 
-        <!-- ZIP breakdown table -->
+        <!-- 3. Map -->
+        <div id="map"></div>
+
+        <!-- 4. ZIP breakdown table -->
         <div class="zip-table-wrap" id="zip-table-wrap" style="display:none;">
           <div class="zip-table-header">
             <h3 id="zip-table-title">ZIP Code Breakdown</h3>

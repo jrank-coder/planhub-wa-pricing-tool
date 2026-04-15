@@ -607,8 +607,9 @@ async function runSearch() {
 // ════════════════════════════════════════════════════════════════
 
 function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
-  // Hide empty state
+  // Hide empty state, show map
   document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('map').style.display = 'block';
 
   // Alert
   const alertEl = document.getElementById('results-alert');
@@ -642,6 +643,7 @@ function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
   renderZipTable(zipRows);
 
   // Map
+  map.invalidateSize();
   updateMap(center.lat, center.lng, finalRadius, zipRows);
 }
 
@@ -844,6 +846,7 @@ function clearResults() {
   document.getElementById('summary-cards').style.display  = 'none';
   document.getElementById('pricing-card').style.display   = 'none';
   document.getElementById('zip-table-wrap').style.display = 'none';
+  document.getElementById('map').style.display            = 'none';
   document.getElementById('empty-state').style.display    = 'flex';
 }
 
