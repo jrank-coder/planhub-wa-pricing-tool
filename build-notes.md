@@ -1,79 +1,119 @@
 # WA Pricing Tool — Build Notes
-_Last updated: 2026-04-13_
+_Last updated: 2026-04-15_
 
-## Status: Ready for Config & Deploy
+## Status: Live — Pending `Bid Due Date` column in Coefficient Sheet
 
-Core app is built. Requires 5 config items before going live (see below).
+Tool is deployed and fully functional. One remaining blocker: `Bid Due Date` column not yet in Sheet. Tool runs in fallback mode (shows all projects, warning banner visible) until that column is added.
+
+**Live URL:** https://jrank-coder.github.io/planhub-wa-pricing-tool/
+**Admin panel:** https://jrank-coder.github.io/planhub-wa-pricing-tool/admin.html
+**Repo:** https://github.com/jrank-coder/planhub-wa-pricing-tool (branch: `master`)
 
 ---
 
-## What's Built
+## What's Built & Deployed
 
 | File | Purpose | Status |
 |---|---|---|
-| `index.html` | Main tool — dual-mode search, map, results, pricing | ✅ Complete |
-| `app.js` | All tool logic — auth, Sheets, ZIP radius, pricing, map | ✅ Complete |
-| `admin.html` | Pricing tier editor | ✅ Complete |
-| `admin.js` | Tier CRUD + password gate + live preview | ✅ Complete |
-| `styles.css` | PlanHub-branded responsive styles | ✅ Complete |
-| `scripts/prepare-zipcodes.js` | One-time script to generate ZIP dataset | ✅ Complete |
-| `data/usa-zipcodes.json` | All US ZIP lat/lng (~40K records) | ⏳ Must generate (see setup step 3) |
+| `index.html` | Main tool — dual-mode search, map, results, pricing | ✅ Live |
+| `app.js` | All logic — CSV fetch, ZIP radius, pricing, map, auth | ✅ Live |
+| `admin.html` | Pricing tier editor | ✅ Live |
+| `admin.js` | Tier CRUD + password gate + live preview | ✅ Live |
+| `styles.css` | PlanHub brand guidelines (mint/dark blue, Inter, rounded cards) | ✅ Live |
+| `assets/logo-wordmark.png` | PlanHub wordmark — login screen | ✅ Live |
+| `assets/brandmark.png` | PlanHub hexagon brandmark — header | ✅ Live |
+| `data/usa-zipcodes.json` | WA + OR + ID + MT ZIP lat/lng (1,921 records) | ✅ Live |
+| `scripts/prepare-zipcodes.js` | One-time ZIP dataset generator (already run) | ✅ Done |
 
 ---
 
-## Pre-Deploy Checklist
+## Architecture
 
-### 1. Create GitHub repo
-- Repo name suggestion: `planhub-wa-pricing-tool`
-- Enable GitHub Pages: Settings → Pages → Deploy from `main` / root
-- Note the Pages URL: `https://jrank-coder.github.io/planhub-wa-pricing-tool/`
+| Layer | Implementation |
+|---|---|
+| Hosting | GitHub Pages (branch: `master`) |
+| Auth | Firebase Auth — Google sign-in, @planhub.com domain enforced |
+| Project data | Google Sheets CSV export — no API key. Sheet ID: `1QqPlXC7CTTYT7Umf2oBKK0MHCd8spLZshO8L6E43pXo`, tab: `Project data`. Sheet shared as "Anyone with the link — Viewer". |
+| Pricing tiers | Firestore `wa_pricing_tool/pricing_tiers` — editable via admin panel |
+| Map | Leaflet.js + OpenStreetMap (no API key) |
+| ZIP radius | Client-side haversine on `data/usa-zipcodes.json` |
+| Firebase project | `planhub-sales-internal-tools` (shared) |
 
-### 2. Add GitHub Pages URL as Firebase authorized domain
-- Firebase Console → `planhub-sales-internal-tools` → Authentication → Settings → Authorized Domains
-- Add: `jrank-coder.github.io` (already done if ROE AE Tool is live — skip if so)
+---
 
-### 3. Generate ZIP dataset
+## Remaining Blockers
+
+| # | Item | Action needed |
+|---|---|---|
+| 1 | **`Bid Due Date` column missing from Coefficient Sheet** | Add to Coefficient export with header exactly `Bid Due Date` — tool auto-activates date filtering once populated |
+
+## Resolved
+
+| # | Item | Resolved |
+|---|---|---|
+| ✓ | Column headers confirmed and mapped | 2026-04-15 |
+| ✓ | Pricing tiers saved to Firestore | 2026-04-15 |
+| ✓ | Admin password set | 2026-04-15 |
+| ✓ | Firestore rules updated for anonymous admin writes | 2026-04-15 |
+
+---
+
+## Pricing Tiers (set in code, pending Firestore save)
+
+| Tier | Projects | Flat Price | $/Project |
+|---|---|---|---|
+| Tier 1 | 1–10 | $599 | $60 |
+| Tier 2 | 11–25 | $1,000 | $40 |
+| Tier 3 | 26–50 | $1,600 | $32 |
+| Tier 4 | 51–80 | $2,200 | $27 |
+| Tier 5 | 81–120 | $2,800 | $23 |
+| Unlimited | 121+ | $3,500 | — |
+
+Pricing model: flat tier fee (not per-project multiplication). $/Project is display-only for AE reference.
+
+---
+
+## Trade List (configured in `CONFIG.trades`, `app.js`)
+
+25 trades: Demolition and Site Construction · Electrical and Low Voltage · Painting and Wallcovering · HVAC · Concrete Construction · Interior Walls, Ceilings and Insulation · Plumbing · Doors, Glass and Windows · Flooring · Wood, Carpentry and Plaster · Metal and Steel Construction · Roofing, Thermal and Moisture Protection · Specialties · Fire Protection · Kitchens and Baths · Cleaning and Construction · Equipment and Supplies · Exterior Improvements and Landscaping · Masonry Construction · Exterior Siding and Masonry · Preconstruction Planning and Supervision · Special Construction · Decor and Furnishings · Conveying Systems · Other
+
+⚠️ To confirm: "Conveying Systems" — verify this matches exact spelling in Tableau/Coefficient data.
+
+---
+
+## Config TODOs in `app.js`
+
+```javascript
+CONFIG.columns = {
+  projectId:  'project_id',    // TODO: confirm exact header
+  zip:        'zip_code',       // TODO: confirm exact header
+  bidDueDate: 'bid_due_date',   // TODO: confirm exact header — REQUIRED
+  trades:     'trades',          // TODO: confirm exact header
+  city:       'city',            // TODO: confirm exact header (optional — falls back to ZIP dataset)
+}
 ```
-cd Apps/WA-Pricing-Tool
-node scripts/prepare-zipcodes.js
-```
-This creates `data/usa-zipcodes.json` (~3–5 MB). Commit it to the repo.
 
-### 4. Share your Coefficient Google Sheet
-- Open the Coefficient Sheet containing WA project data
-- Click Share → General access → **Anyone with the link → Viewer**
-- No API key needed — the tool fetches via the public CSV export URL
-- Sheet ID and tab name are already set in `app.js`
-- Update `CONFIG.columns.*` once exact column header names are confirmed
+---
 
-### 6. Update trade list
-- Edit `CONFIG.trades` in `app.js` to match the actual trade values
-  used in your Coefficient Sheet's `trades` column
+## Fallback Behavior (while bid_due_date is missing)
 
-### 7. Set admin password
-- Open browser DevTools console on `admin.html`
-- Run: `const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('your-password')); console.log(Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join(''));`
-- Copy the hash into `admin.js` → `ADMIN_HASH`
-- Also update the fallback string: change `'planhub-admin'` to your password
+- Tool shows ALL projects regardless of bid date
+- Orange warning banner displayed on every search: *"Bid due date column not yet in the Sheet — showing all projects regardless of status."*
+- Automatically switches to active-only filtering the moment `bid_due_date` column is present and non-empty
 
-### 8. Set pricing tiers
-- Deploy the app
-- Go to `admin.html`
-- Enter the admin password
-- Fill in all 6 tier rows (label, min, max, price/project)
-- Click Save — tiers write to Firestore immediately
+---
 
-### 9. Push to GitHub and verify
-```
-git init
-git add .
-git commit -m "Initial deploy — WA Pricing Tool"
-git remote add origin https://github.com/jrank-coder/planhub-wa-pricing-tool.git
-git push -u origin main
-```
-- Open `https://jrank-coder.github.io/planhub-wa-pricing-tool/`
-- Sign in with Google (@planhub.com account)
-- Run a test search: ZIP 98101, 50 miles
+## Session Log
+
+### 2026-04-13 — Initial build + deploy
+- Full app built from scratch: dual-mode search (by radius + by project count), Leaflet map with radius circle, trade multi-select, pricing card, ZIP table, CSV export
+- Data pipeline: Tableau → Coefficient → Google Sheet → CSV fetch (no API key)
+- ZIP dataset generated: WA/OR/ID/MT only (1,921 records via GeoNames)
+- Pricing model: flat tier fees (6 tiers), editable via admin panel → Firestore
+- PlanHub brand guidelines applied (mint/dark-blue, Inter, rounded cards, real logo assets)
+- Admin link added to header (⚙ Pricing Admin button)
+- Deployed to GitHub Pages: https://jrank-coder.github.io/planhub-wa-pricing-tool/
+- Pending at close: Sheet column names, bid_due_date column, Firestore tier save, admin password change
 
 ---
 
@@ -81,35 +121,12 @@ git push -u origin main
 
 | Collection | Document | Purpose |
 |---|---|---|
-| `wa_pricing_tool` | `pricing_tiers` | 6 pricing tier definitions |
-
----
-
-## Config TODOs in Code
-
-All marked with `// TODO:` in `app.js` and `admin.js`:
-
-| File | Line area | Item |
-|---|---|---|
-| `app.js` | `CONFIG.columns.*` | Column header names — confirm once bid due date + project ID fields are added to Sheet |
-| `app.js` | `CONFIG.trades` | Replace with actual trade list |
-| `admin.js` | `ADMIN_HASH` | Replace with SHA-256 hash of your password |
-
----
-
-## Architecture
-
-- **Hosting:** GitHub Pages
-- **Auth:** Firebase Auth (Google sign-in, @planhub.com domain)
-- **Data:** Google Sheets API v4 (Coefficient Sheet, read-only API key)
-- **Pricing tiers:** Firestore `wa_pricing_tool/pricing_tiers`
-- **Map:** Leaflet.js + OpenStreetMap (no API key)
-- **ZIP radius:** Client-side haversine on bundled `usa-zipcodes.json`
+| `wa_pricing_tool` | `pricing_tiers` | 6 pricing tier definitions (editable via admin panel) |
 
 ---
 
 ## Command Center Tier
-Tier 2 (on-demand link) — not an always-visible panel. Panel-friendly width: 320px sidebar.
+Tier 2 (on-demand link). Panel-friendly at 330px sidebar width.
 
 ## Hub Migration Risk
-Low. Pricing tiers stored in Firestore (already a clean interface). Business logic (tier matching, haversine) is self-contained in `app.js`. No hardcoded metric definitions.
+Low. Pricing tiers in Firestore (clean interface). Business logic self-contained. No hardcoded metric definitions.
