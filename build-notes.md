@@ -1,9 +1,9 @@
 # WA Pricing Tool — Build Notes
 _Last updated: 2026-04-15_
 
-## Status: Live — Pending `Bid Due Date` column in Coefficient Sheet
+## Status: Fully Live
 
-Tool is deployed and fully functional. One remaining blocker: `Bid Due Date` column not yet in Sheet. Tool runs in fallback mode (shows all projects, warning banner visible) until that column is added.
+Tool is deployed and fully operational. All blockers resolved as of 2026-04-15.
 
 **Live URL:** https://jrank-coder.github.io/planhub-wa-pricing-tool/
 **Admin panel:** https://jrank-coder.github.io/planhub-wa-pricing-tool/admin.html
@@ -41,16 +41,11 @@ Tool is deployed and fully functional. One remaining blocker: `Bid Due Date` col
 
 ---
 
-## Remaining Blockers
-
-| # | Item | Action needed |
-|---|---|---|
-| 1 | **`Bid Due Date` column missing from Coefficient Sheet** | Add to Coefficient export with header exactly `Bid Due Date` — tool auto-activates date filtering once populated |
-
 ## Resolved
 
 | # | Item | Resolved |
 |---|---|---|
+| ✓ | `Bid Due Date` column added to Coefficient Sheet | 2026-04-15 |
 | ✓ | Column headers confirmed and mapped | 2026-04-15 |
 | ✓ | Pricing tiers saved to Firestore | 2026-04-15 |
 | ✓ | Admin password set | 2026-04-15 |
