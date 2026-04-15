@@ -394,25 +394,12 @@ function buildTradeList() {
     updateTradeCount();
   });
 
-  document.getElementById('btn-select-all-states').addEventListener('click', () => {
-    document.querySelectorAll('.state-cb').forEach(cb => { cb.checked = true; });
-  });
-  document.getElementById('btn-clear-states').addEventListener('click', () => {
-    document.querySelectorAll('.state-cb').forEach(cb => { cb.checked = false; });
-  });
 }
 
 function getSelectedTrades() {
   const cbs = document.querySelectorAll('.trade-cb:checked');
   const all  = document.querySelectorAll('.trade-cb');
   // If all selected, treat as "no filter" for performance
-  if (cbs.length === all.length) return [];
-  return [...cbs].map(cb => cb.value);
-}
-
-function getSelectedStates() {
-  const cbs = document.querySelectorAll('.state-cb:checked');
-  const all  = document.querySelectorAll('.state-cb');
   if (cbs.length === all.length) return [];
   return [...cbs].map(cb => cb.value);
 }
@@ -462,7 +449,7 @@ function isBidDateMissing() {
   return state.projectData.every(p => !p.bidDueDate);
 }
 
-function getActiveProjects(zipCodes, selectedTrades, selectedStates) {
+function getActiveProjects(zipCodes, selectedTrades) {
   const todayStr    = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const zipSet      = new Set(zipCodes);
   const datesMissing = isBidDateMissing();
@@ -471,7 +458,6 @@ function getActiveProjects(zipCodes, selectedTrades, selectedStates) {
     if (!zipSet.has(p.zip)) return false;
     // If bid_due_date column not yet in Sheet, include all projects and show warning
     if (!datesMissing && p.bidDueDate && p.bidDueDate < todayStr) return false;
-    if (selectedStates.length > 0 && !selectedStates.includes(p.state)) return false;
 
     if (selectedTrades.length > 0) {
       const projectTrades = p.trades.split(',').map(t => t.trim()).filter(Boolean);
@@ -498,9 +484,8 @@ async function runSearch() {
     showSearchError('ZIP code not recognized. Please enter a valid US ZIP code.');
     return;
   }
-  const VALID_STATES = new Set(['WA', 'OR', 'ID', 'MT']);
-  if (!VALID_STATES.has(state.zipData[zip].state)) {
-    showSearchError('Search center must be a ZIP code in WA, OR, ID, or MT.');
+  if (state.zipData[zip].state !== 'WA') {
+    showSearchError('Search center must be a Washington state ZIP code.');
     return;
   }
   if (!state.dataLoaded) {
@@ -509,7 +494,6 @@ async function runSearch() {
   }
 
   const selectedTrades = getSelectedTrades();
-  const selectedStates = getSelectedStates();
   setBtnLoading(true);
 
   try {
@@ -519,7 +503,7 @@ async function runSearch() {
       // ── Mode 1: ZIP + radius → project count ──
       finalRadius    = state.radius;
       zipsInRadius   = getZipsInRadius(zip, finalRadius);
-      activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades, selectedStates);
+      activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
 
       if (isBidDateMissing()) {
         alert = {
@@ -545,7 +529,7 @@ async function runSearch() {
       let found = false;
       for (const r of CONFIG.radiusSteps) {
         const zips  = getZipsInRadius(zip, r);
-        const projs = getActiveProjects(zips.map(z => z.zip), selectedTrades, selectedStates);
+        const projs = getActiveProjects(zips.map(z => z.zip), selectedTrades);
         if (projs.length >= target) {
           finalRadius    = r;
           zipsInRadius   = zips;
@@ -564,7 +548,7 @@ async function runSearch() {
         // Max radius reached
         finalRadius    = CONFIG.maxRadius;
         zipsInRadius   = getZipsInRadius(zip, finalRadius);
-        activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades, selectedStates);
+        activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
         alert = {
           type: 'warning',
           msg:  `Only ${activeProjects.length} active project${activeProjects.length !== 1 ? 's' : ''} found within ${CONFIG.maxRadius} miles. Adjust your trade selection or consider a broader territory.`,
