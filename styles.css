@@ -429,7 +429,7 @@ body {
 .alert-info    { background: var(--mint-soft); border-color: var(--mint); color: #00695c; }
 
 /* ── Summary cards ── */
-.summary-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.summary-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
 
 .summary-card {
   background: var(--card-bg);

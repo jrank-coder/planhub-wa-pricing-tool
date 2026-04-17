@@ -486,6 +486,17 @@ function getActiveProjects(zipCodes, selectedTrades) {
   });
 }
 
+function getAllProjects(zipCodes, selectedTrades) {
+  const zipSet = new Set(zipCodes);
+  return state.projectData.filter(p => {
+    if (!zipSet.has(p.zip)) return false;
+    if (selectedTrades.length > 0) {
+      return selectedTrades.some(t => p.trades.includes(t));
+    }
+    return true;
+  });
+}
+
 // ════════════════════════════════════════════════════════════════
 // SEARCH EXECUTION
 // ════════════════════════════════════════════════════════════════
@@ -516,13 +527,14 @@ async function runSearch() {
   setBtnLoading(true);
 
   try {
-    let finalRadius, zipsInRadius, activeProjects, alert = null;
+    let finalRadius, zipsInRadius, activeProjects, allProjects, alert = null;
 
     if (state.mode === 'radius') {
       // ── Mode 1: ZIP + radius → project count ──
       finalRadius    = state.radius;
       zipsInRadius   = getZipsInRadius(zip, finalRadius);
       activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
+      allProjects    = getAllProjects(zipsInRadius.map(z => z.zip), selectedTrades);
 
       if (isBidDateMissing()) {
         alert = {
@@ -553,6 +565,7 @@ async function runSearch() {
           finalRadius    = r;
           zipsInRadius   = zips;
           activeProjects = projs;
+          allProjects    = getAllProjects(zips.map(z => z.zip), selectedTrades);
           found          = true;
           break;
         }
@@ -568,6 +581,7 @@ async function runSearch() {
         finalRadius    = CONFIG.maxRadius;
         zipsInRadius   = getZipsInRadius(zip, finalRadius);
         activeProjects = getActiveProjects(zipsInRadius.map(z => z.zip), selectedTrades);
+        allProjects    = getAllProjects(zipsInRadius.map(z => z.zip), selectedTrades);
         alert = {
           type: 'warning',
           msg:  `Only ${activeProjects.length} active project${activeProjects.length !== 1 ? 's' : ''} found within ${CONFIG.maxRadius} miles. Adjust your trade selection or consider a broader territory.`,
@@ -589,10 +603,10 @@ async function runSearch() {
       .sort((a, b) => b.active - a.active || a.distance - b.distance);
 
     // Cache results for export
-    state.results = { zip, finalRadius, activeProjects, zipRows, zipsInRadius };
+    state.results = { zip, finalRadius, activeProjects, allProjects, zipRows, zipsInRadius };
 
     // ── Render ──
-    renderResults({ zip, finalRadius, activeProjects, zipRows, alert });
+    renderResults({ zip, finalRadius, activeProjects, allProjects, zipRows, alert });
 
   } catch (err) {
     console.error(err);
@@ -606,7 +620,7 @@ async function runSearch() {
 // RENDER RESULTS
 // ════════════════════════════════════════════════════════════════
 
-function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
+function renderResults({ zip, finalRadius, activeProjects, allProjects, zipRows, alert }) {
   // Hide empty state, show map
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('map').style.display         = 'block';
@@ -626,6 +640,7 @@ function renderResults({ zip, finalRadius, activeProjects, zipRows, alert }) {
   const zipsWithData  = zipRows.length;
   document.getElementById('card-active-projects').textContent = activeProjects.length.toLocaleString();
   document.getElementById('card-active-sub').textContent      = 'bid due today or later';
+  document.getElementById('card-all-projects').textContent    = (allProjects || []).length.toLocaleString();
   document.getElementById('card-radius').textContent          = finalRadius;
   document.getElementById('card-zips').textContent            = zipsWithData;
 
