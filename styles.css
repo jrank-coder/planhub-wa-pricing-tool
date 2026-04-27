@@ -573,7 +573,7 @@ body {
 .trade-search::placeholder { color: var(--light-grey); }
 
 /* ── ZIP table ── */
-.zip-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; }
+.zip-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; min-height: 0; }
 
 .zip-table-wrap {
   flex: 1;
