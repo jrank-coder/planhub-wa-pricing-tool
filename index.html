@@ -136,6 +136,33 @@
         <!-- Inline error -->
         <div id="search-error" style="display:none;"></div>
 
+        <!-- Add-ons -->
+        <div class="field-group">
+          <label>Add-Ons</label>
+          <div class="addon-list" id="addon-list">
+            <label class="addon-item">
+              <input type="checkbox" class="addon-cb" data-price="699" data-name="Takeoff" />
+              <span class="addon-name">Takeoff</span>
+              <span class="addon-price">$699</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" class="addon-cb" data-price="1299" data-name="Takeoff w/ Estimation" />
+              <span class="addon-name">Takeoff w/ Estimation</span>
+              <span class="addon-price">$1,299</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" class="addon-cb" data-price="699" data-name="Network" />
+              <span class="addon-name">Network</span>
+              <span class="addon-price">$699</span>
+            </label>
+            <label class="addon-item">
+              <input type="checkbox" class="addon-cb" data-price="199" data-name="Early Stage Projects" />
+              <span class="addon-name">Early Stage Projects</span>
+              <span class="addon-price">$199</span>
+            </label>
+          </div>
+        </div>
+
       </div>
 
     </aside>
@@ -176,7 +203,10 @@
           <div class="pricing-grid">
             <div class="pricing-stat">
               <div class="ps-label">Total Investment</div>
-              <div class="ps-value" id="pc-total">—</div>
+              <div class="ps-value-row">
+                <div class="ps-value" id="pc-total">—</div>
+                <div class="pc-includes" id="pc-includes" style="display:none;"></div>
+              </div>
             </div>
             <div class="pricing-stat">
               <div class="ps-label">Rate / Project</div>

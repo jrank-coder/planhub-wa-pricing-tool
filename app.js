@@ -662,12 +662,19 @@ function renderResults({ zip, finalRadius, activeProjects, allProjects, zipRows,
   updateMap(center.lat, center.lng, finalRadius, zipRows);
 }
 
+function getAddonTotal() {
+  return [...document.querySelectorAll('.addon-cb:checked')]
+    .reduce((sum, cb) => sum + parseInt(cb.dataset.price, 10), 0);
+}
+
 function renderPricingCard(count, tier) {
   const card = document.getElementById('pricing-card');
   if (!tier || !tier.priceFlat) return;
 
-  const baseTier = state.pricingTiers[0];
-  const baseRate = baseTier ? baseTier.pricePerProject : null; // $60 base
+  const baseTier    = state.pricingTiers[0];
+  const baseRate    = baseTier ? baseTier.pricePerProject : null; // $60 base
+  const addonTotal  = getAddonTotal();
+  const grandTotal  = tier.priceFlat + addonTotal;
 
   // Effective per-project rate at this count (for AE reference)
   const effectiveRate = tier.pricePerProject != null
@@ -678,11 +685,24 @@ function renderPricingCard(count, tier) {
   const savings = baseRate ? Math.max(0, (baseRate - effectiveRate) * count) : 0;
 
   document.getElementById('pc-tier-badge').textContent = tier.label;
-  document.getElementById('pc-total').textContent      = fmtDollar(tier.priceFlat);
+  document.getElementById('pc-total').textContent      = fmtDollar(grandTotal);
   document.getElementById('pc-rate').textContent       = tier.pricePerProject != null
     ? `$${tier.pricePerProject}/project`
     : `${fmtDollar(tier.priceFlat)} flat`;
   document.getElementById('pc-savings').textContent    = savings > 0 ? fmtDollar(savings) : '—';
+
+  // Includes tags
+  const selectedAddons = [...document.querySelectorAll('.addon-cb:checked')].map(cb => cb.dataset.name);
+  const includesEl     = document.getElementById('pc-includes');
+  if (selectedAddons.length > 0) {
+    includesEl.innerHTML    = selectedAddons
+      .map(name => `<span class="pc-include-tag">includes: ${escHtml(name)}</span>`)
+      .join('');
+    includesEl.style.display = 'flex';
+  } else {
+    includesEl.innerHTML    = '';
+    includesEl.style.display = 'none';
+  }
 
   const rateStr = tier.pricePerProject != null
     ? `$${tier.pricePerProject}/project`
@@ -721,6 +741,9 @@ document.getElementById('btn-export-csv').addEventListener('click', () => {
   const today = new Date().toLocaleDateString();
   const tier  = matchTier(activeProjects.length);
 
+  const addonTotal    = getAddonTotal();
+  const selectedAddons = [...document.querySelectorAll('.addon-cb:checked')];
+
   const rows = [
     ['ZIP', 'City', 'State', 'Distance (mi)', 'Active Projects'],
     ...zipRows.map(r => [r.zip, r.city, r.state, r.distance.toFixed(1), r.active]),
@@ -731,7 +754,9 @@ document.getElementById('btn-export-csv').addEventListener('click', () => {
     ['Active Projects', activeProjects.length],
     ['Tier', tier ? tier.label : '—'],
     ['Price / Project', tier && tier.pricePerProject != null ? `$${tier.pricePerProject}` : '—'],
-    ['Total Investment', tier ? fmtDollar(tier.priceFlat) : '—'],
+    ['Base Plan', tier ? fmtDollar(tier.priceFlat) : '—'],
+    ...selectedAddons.map(cb => [`Add-On: ${cb.dataset.name}`, fmtDollar(parseInt(cb.dataset.price, 10))]),
+    ['Total Investment', tier ? fmtDollar(tier.priceFlat + addonTotal) : '—'],
     ['Exported', today],
   ];
 
@@ -793,6 +818,14 @@ function bindUIEvents() {
 
   // Refresh
   document.getElementById('btn-refresh').addEventListener('click', () => fetchProjectData());
+
+  // Add-ons — re-render pricing card live when checked/unchecked
+  document.getElementById('addon-list').addEventListener('change', () => {
+    if (state.results) {
+      const count = state.results.activeProjects.length;
+      renderPricingCard(count, matchTier(count));
+    }
+  });
 
   // Table sort
   document.querySelectorAll('th[data-col]').forEach(th => {
