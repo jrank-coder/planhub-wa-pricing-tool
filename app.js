@@ -819,12 +819,14 @@ function bindUIEvents() {
   // Refresh
   document.getElementById('btn-refresh').addEventListener('click', () => fetchProjectData());
 
-  // Add-ons — re-render pricing card live when checked/unchecked
-  document.getElementById('addon-list').addEventListener('change', () => {
-    if (state.results) {
-      const count = state.results.activeProjects.length;
-      renderPricingCard(count, matchTier(count));
-    }
+  // Add-ons — bind directly to each checkbox (delegation on container is unreliable for label-wrapped inputs)
+  document.querySelectorAll('.addon-cb').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (state.results) {
+        const count = state.results.activeProjects.length;
+        renderPricingCard(count, matchTier(count));
+      }
+    });
   });
 
   // Table sort
