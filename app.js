@@ -487,9 +487,16 @@ function getActiveProjects(zipCodes, selectedTrades) {
 }
 
 function getAllProjects(zipCodes, selectedTrades) {
-  const zipSet = new Set(zipCodes);
+  const zipSet      = new Set(zipCodes);
+  const datesMissing = isBidDateMissing();
+  const cutoff      = new Date();
+  cutoff.setDate(cutoff.getDate() - 180);
+  const cutoffStr   = cutoff.toISOString().split('T')[0];
+
   return state.projectData.filter(p => {
     if (!zipSet.has(p.zip)) return false;
+    // Exclude projects whose bid due date is more than 180 days ago (platform retention rule)
+    if (!datesMissing && p.bidDueDate && p.bidDueDate < cutoffStr) return false;
     if (selectedTrades.length > 0) {
       return selectedTrades.some(t => p.trades.includes(t));
     }
