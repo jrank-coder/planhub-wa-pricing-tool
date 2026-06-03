@@ -52,8 +52,8 @@ const CONFIG = {
     'Wood Carpentry and Plastics Construction',
   ],
   // Radius steps used in binary search (Mode 2 — find radius for target project count)
-  radiusSteps: [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 175, 200],
-  maxRadius: 200,
+  radiusSteps: [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 80, 90, 100, 120, 140, 150, 160, 180, 200, 240, 280, 320, 350, 360, 400, 440, 480, 500, 1000],
+  maxRadius: 1000,
 };
 
 // ════════════════════════════════════════════════════════════════
